@@ -1,0 +1,62 @@
+CREATE DATABASE IF NOT EXISTS tripvibe;
+USE tripvibe;
+
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
+  travel_preferences JSON NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS trips (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NULL,
+  title VARCHAR(180) NOT NULL,
+  destination VARCHAR(160) NOT NULL,
+  start_date DATE NULL,
+  end_date DATE NULL,
+  travelers INT NOT NULL DEFAULT 1,
+  budget DECIMAL(12, 2) NULL,
+  currency CHAR(3) NOT NULL DEFAULT 'INR',
+  preferences JSON NULL,
+  itinerary JSON NOT NULL,
+  status ENUM('draft', 'saved', 'shared', 'archived') NOT NULL DEFAULT 'saved',
+  share_token VARCHAR(80) NULL UNIQUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_trips_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_trips_user_id (user_id),
+  INDEX idx_trips_destination (destination)
+);
+
+CREATE TABLE IF NOT EXISTS destinations (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  slug VARCHAR(160) NOT NULL UNIQUE,
+  name VARCHAR(160) NOT NULL,
+  country VARCHAR(120) NOT NULL DEFAULT 'India',
+  state VARCHAR(120) NULL,
+  description TEXT NULL,
+  image_url VARCHAR(500) NULL,
+  tags JSON NULL,
+  average_daily_budget DECIMAL(12, 2) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NULL,
+  trip_id BIGINT UNSIGNED NULL,
+  role ENUM('user', 'assistant') NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_chat_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  CONSTRAINT fk_chat_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE SET NULL
+);
