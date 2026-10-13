@@ -1,0 +1,16 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports: ["8000:8000"]
+    env_file: ./backend/.env
+    volumes: ["tripvibe-data:/app"]
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports: ["8080:80"]
+    depends_on: [backend]
+volumes:
+  tripvibe-data:
